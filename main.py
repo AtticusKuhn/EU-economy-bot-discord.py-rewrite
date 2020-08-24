@@ -2,12 +2,10 @@ from discord.ext import commands
 # Import the keep alive file
 import keep_alive
 import os
-import replit
-from os import listdir
-from os.path import isfile, join
 os.system("pip install dnspython")
 ##events
 from events.error import command_error
+from events.ready import ready
 
 
 def get_prefix(client, message):
@@ -27,20 +25,12 @@ bot = commands.Bot(        # Create a new bot
 
 # case_insensitive=True is used as the commands are case sensitive by default
 
-cogs = list(map(lambda x: x[:-3],[f for f in listdir("commands") if isfile(join("commands", f))]))
 
 
 @bot.event
 async def on_ready():
-    replit.clear()
-    print(f'Logged in as {bot.user.name} - {bot.user.id}')
-    bot.remove_command('help')
-    # Removes the help command
-    # Make sure to do this before loading the cogs
-    for cog in cogs:
-        print("cog is",cog)
-        bot.load_extension(f'commands.{cog}')
-    return
+    await ready(bot)
+    
 
 
 @bot.event
