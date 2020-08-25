@@ -168,3 +168,6 @@ class Market(commands.Cog):
         return  await ctx.send(embed=simple_embed(True,"success"))
 def setup(bot):
     bot.add_cog(Market(bot))
+
+
+

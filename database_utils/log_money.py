@@ -11,10 +11,7 @@ from discord_utils.embeds import simple_embed
 def log_money(guild, message):
     print("log_money called")
     guild_collection = db[str(guild.id)]
-    server_config =  guild_collection.find_one({
-        "type":"server",
-        "id"  : guild.id
-    })
+    server_config =  guild_collection.find_one({"type":"server","id":guild.id})
     if server_config is None:
         return
     print("config is not none")

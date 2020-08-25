@@ -11,6 +11,8 @@ db = client.database
 
 import methods
 from discord_utils.embeds import simple_embed
+from quiz import subject_to_quiz
+
 
 class Work(commands.Cog):
     def __init__(self, bot):
@@ -112,13 +114,16 @@ class Work(commands.Cog):
             }}}
         )
         return await ctx.send(embed=simple_embed(True, "work level set"))
-     @commands.command(
+    @commands.command(
         name='quiz',
         description='take a quiz for a cash prize',
         aliases=['qz']
     )       
 
-    async def get_question(person, guild):
+    async def get_question(self, ctx):
+        guild=ctx.guild
+        person=ctx.author
+
         guild_collection=db[str(guild.id)]
         server_config =  guild_collection.find_one({
             "type":"server",
@@ -140,6 +145,7 @@ class Work(commands.Cog):
         )
         if not "quiz-subject" in server_config:
             return await ctx.send(embed=simple_embed (False, "no quiz subject for this server set. Ask you admin to set the quiz subject by doing something like $config quiz-subject {Subject}"))
+        await ctx.send(embed=simple_embed ("info", "Parsing sentence to generate question....."))
         question = subject_to_quiz(server_config["quiz-subject"])
         print(question,"question")
         guild_collection.insert_one({
@@ -151,3 +157,40 @@ class Work(commands.Cog):
         return await ctx.send(embed=simple_embed (True, question["question"]))
 def setup(bot):
     bot.add_cog(Work(bot))
+
+
+def answer_question(ctx, answer):
+    guild=ctx.guild
+    person=ctx.author
+    guild_collection=db[str(guild.id)]
+    question = guild_collection.find_one({"type":"quiz","person":person.id})
+    if question is None:
+        return None
+    guild_collection.delete_one({"type":"quiz","person":person.id})
+    server_config =  guild_collection.find_one({
+        "type":"server",
+        "id"  : guild.id
+    })
+    quiz_time = config["quiz-time"]
+    if "quiz-time" in server_config:
+        quiz_time = server_config["quiz-time"]
+    if time.time() - question["time"] >quiz_time:
+        return (False, "you ran out of time sorry")
+    if question["question"] is not None:
+        if "answer" in  question["question"]:
+            if question["question"]["answer"].lower() != answer.lower() and answer not in question["question"]["similar_words"]:
+                return (False,f'incorrect answer, correct answer is {question["question"]["answer"]}')
+    if server_config is not None and "quiz-payoff" in server_config:
+        guild_collection.update_one(
+            {"id":  person.id },
+            { "$inc":{f'balance':server_config["quiz-payoff"]} }
+        )
+        return (True, f'your balance has been increased by {server_config["quiz-payoff"]}')
+
+    guild_collection.update_one(
+        {"id":  person.id },
+        { "$inc":{f'balance':1} }
+    )
+    if answer in question["question"]["similar_words"]:
+        return (True, f'the correct answer was {question["question"]["answer"]}, but that was close enough to be correct.')
+    return (True, "your balance has been increased by one")

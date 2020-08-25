@@ -16,53 +16,14 @@ from discord_utils.embeds import simple_embed
 class Send(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    async def send(self, ctx, from_wallet, to_wallet, amount ):
-        if not methods.can_access_wallet(ctx.guild, ctx.author.id, from_wallet):
-            return (False, "cannot access wallet")
-        currency=""
-        if "-" in amount:
-            currency=f'-{amount.split("-")[1]}'
-            amount =amount.split("-")[0]
-        percent = False
-        if "%" in amount:
-            percent = True
-            amount =amount.split("%")[0]
-        try:
-            amount = int(amount)
-        except:
-            return (False,"invalid amount" )
-        guild_collection =db[str(ctx.guild.id)]
-        from_wallet_id = methods.get_wallet(ctx.guild, from_wallet)
-        to_wallet_id =methods.get_wallet(ctx.guild, to_wallet)
-        if(from_wallet_id[0] and to_wallet_id[0]):
-            sender_account=methods.find_create(from_wallet_id[1].id,ctx.guild)
-            reciever_account=methods.find_create(to_wallet_id[1].id,ctx.guild)
-            if f'balance{currency}' not in sender_account:
-                return (False, "you do not have this currency")
-            if percent:
-                amount = math.floor(sender_account[f'balance{currency}']*(amount/100))
-            if(sender_account[f'balance{currency}'] > amount):
-                guild_collection.update_one(
-                    {"id":  sender_account["id"] },
-                    { "$inc":{f'balance{currency}':-amount} }
-                )
-                guild_collection.update_one(
-                    {"id":  reciever_account["id"] },
-                    { "$inc":{f'balance{currency}':amount} }
-                )
-                log_money(ctx.guild,f'<@{from_wallet}> sent {amount} from {from_wallet_id[1].mention } to {to_wallet_id[1].mention}')
-                return (True, "yeet")
-            else:
-                return (False, f'insuffiecent funds for transfer.')
-        else:
-            return (False, "cannot find wallet")
+
     @commands.command(
         name='send',
         description='send an ammount of money',
         aliases=['s','pay']
     )
     async def return_send_result(self, ctx, from_wallet, to_wallet, amount ):
-        return await ctx.send(embed=simple_embed(*self.send( ctx, from_wallet, to_wallet, amount )))
+        return await ctx.send(embed=simple_embed(*send( ctx, from_wallet, to_wallet, amount )))
     @commands.command(
         name='send-each',
         description='send each person an ammount of money',
@@ -73,7 +34,7 @@ class Send(commands.Cog):
         return_statement = ""
         successful_transfer = True
         for person in people:
-            send_result = await self.send(ctx, from_wallet, f'<@{person}>', amount)
+            send_result = await send(ctx, from_wallet, f'<@{person}>', amount)
             print("send_result",send_result)
             if  send_result[0]:
                 return_statement = return_statement + f'<@{person}> - success\n'
@@ -92,3 +53,44 @@ class Send(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Send(bot))
+
+async def send( ctx, from_wallet, to_wallet, amount ):
+    if not methods.can_access_wallet(ctx.guild, ctx.author.id, from_wallet):
+        return (False, "cannot access wallet")
+    currency=""
+    if "-" in amount:
+        currency=f'-{amount.split("-")[1]}'
+        amount =amount.split("-")[0]
+    percent = False
+    if "%" in amount:
+        percent = True
+        amount =amount.split("%")[0]
+    try:
+        amount = int(amount)
+    except:
+        return (False,"invalid amount" )
+    guild_collection =db[str(ctx.guild.id)]
+    from_wallet_id = methods.get_wallet(ctx.guild, from_wallet)
+    to_wallet_id =methods.get_wallet(ctx.guild, to_wallet)
+    if(from_wallet_id[0] and to_wallet_id[0]):
+        sender_account=methods.find_create(from_wallet_id[1].id,ctx.guild)
+        reciever_account=methods.find_create(to_wallet_id[1].id,ctx.guild)
+        if f'balance{currency}' not in sender_account:
+            return (False, "you do not have this currency")
+        if percent:
+            amount = math.floor(sender_account[f'balance{currency}']*(amount/100))
+        if(sender_account[f'balance{currency}'] > amount):
+            guild_collection.update_one(
+                {"id":  sender_account["id"] },
+                { "$inc":{f'balance{currency}':-amount} }
+            )
+            guild_collection.update_one(
+                {"id":  reciever_account["id"] },
+                { "$inc":{f'balance{currency}':amount} }
+            )
+            log_money(ctx.guild,f'<@{from_wallet}> sent {amount} from {from_wallet_id[1].mention } to {to_wallet_id[1].mention}')
+            return (True, "yeet")
+        else:
+            return (False, f'insuffiecent funds for transfer.')
+    else:
+        return (False, "cannot find wallet")

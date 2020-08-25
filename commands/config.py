@@ -55,7 +55,26 @@ class Config(commands.Cog):
             }
         })
         return await ctx.send(embed=simple_embed( True, "success"))
+    @commands.command(
+        name='view-config',
+        description='see what the current server config is ',
+        aliases=['v-c']
+    )
+    async def view_config(self, ctx):
+        guild = ctx.guild
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send(embed=simple_embed(False,"must be admin"))
+        guild_collection =db[str(guild.id)]
+        server_config =  guild_collection.find_one({"type":"server","id"  : guild.id})
+        if server_config is None:
+            guild_collection.insert_one({
+                "type":"server",
+                "id":guild.id,
+                "default_balance": config["default_balance"]
+            })
+        server_config =  guild_collection.find_one({"type":"server","id"  : guild.id})
+        return await ctx.send(embed=simple_embed( True, str(server_config)))
 
-
+        
 def setup(bot):
     bot.add_cog(Config(bot))
