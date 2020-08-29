@@ -9,9 +9,9 @@ from events.ready import ready
 from events.message import message
 
 def get_prefix(client, message):
-    prefixes = ['=']    # sets the prefixes, u can keep it as an array of only 1 item if you need only one prefix
+    prefixes = ['$']    # sets the prefixes, u can keep it as an array of only 1 item if you need only one prefix
     if not message.guild:
-        prefixes = ['==']   # Only allow '==' as a prefix when in DMs
+        prefixes = ['$']   # Only allow '==' as a prefix when in DMs
     return commands.when_mentioned_or(*prefixes)(client, message)    # Allow users to @mention the bot instead of using a prefix when using a command.
 
 bot = commands.Bot(        # Create a new bot                                     
@@ -35,5 +35,5 @@ async def on_command_error(ctx,error):
 
 keep_alive.keep_alive()# Start the server
 
-bot.run(os.environ.get('TOKEN'), bot=True, reconnect=True)# Finally, login the bot
+bot.run(os.environ.get('DISCORD_BOT_SECRET'), bot=True, reconnect=True)# Finally, login the bot
 

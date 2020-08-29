@@ -19,27 +19,35 @@ class Smart_contract(commands.Cog):
     @commands.command(
         name='add-smart-contract',
         description='add a new smart contract',
-        aliases=['sc']
+        aliases=['asc']
     )
-    async def insert_trade(self, ctx,trigger, *,contract):
+    async def insert_contract(self, ctx,trigger, *,contract):
         print("contract", contract)
-        return
         guild=ctx.guild
         person=ctx.author
         if(trigger not in config["triggers"]):
-            return (False, f'invalid trigger types. The supported types are {config["triggers"]}')
+            return await ctx.send(embed=simple_embed (False, f'invalid trigger types. The supported types are {config["triggers"]}'))
         for i in config["illegal_code"]:
             if(i in contract):
-                return (False, "contains malicious code")
+                return await ctx.send(embed=simple_embed (False, "contains malicious code"))
         if "set_money" in contract and not person.guild_permissions.administrator:
-            return (False, "only admins can use set_money")
+            return await ctx.send(embed=simple_embed (False, "only admins can use set_money"))
+        if contract.startswith("```") and contract.endswith("```"):
+            contract=contract[3:-3]
+            print(contract)
+        if contract.startswith("```python") and contract.endswith("```"):
+            contract=contract[9:-3]
+            print(contract)
+        if contract.startswith("```py") and contract.endswith("```"):
+            contract=contract[5:-3]
+            print(contract)
         guild_collection =db[str(guild.id)]
         contracts = guild_collection.find({
             "type":"contract",
             "author":person.id
         })
         if(len(list(contracts)) > config["max_contracts"]):
-            return (False, "you have too many contracts")
+            return await ctx.send(embed=simple_embed (False, "you have too many contracts"))
         guild_collection.insert_one({
             "type"   :"contract",
             "author":person.id,
@@ -47,8 +55,19 @@ class Smart_contract(commands.Cog):
             "code": contract,
             "guild_id":guild.id
         })
-        return (True, "successful")
-
+        return await ctx.send(embed=simple_embed (True, "successful"))
+    @commands.command(
+        name='clear-contracts',
+        description='delete all your smart contracts',
+        aliases=['cc']
+    )
+    async def clear_contracts(self, ctx):
+        guild_collection =db[str(ctx.guild.id)]
+        guild_collection.delete_many({
+            "type":'contract',
+            "author":ctx.author.id
+        })
+        return await ctx.send(embed=simple_embed(True, "contracts deleted"))
 
 def setup(bot):
     bot.add_cog(Smart_contract(bot))
@@ -68,6 +87,8 @@ def execute_contracts(guild,array_of_contracts ,context, context_name):
         safe_dict[context_name]=context
         try:
             exec(contract["code"],{"__builtins__":None},safe_dict)
+            if safe_dict["output"] is None:
+                return None
             reply = str(safe_dict["output"])
         except Exception as e:
             reply = f'error:{e}'

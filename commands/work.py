@@ -3,6 +3,7 @@ import time
 from config import config
 import random
 import re
+import discord
 
 import os
 from pymongo import MongoClient
@@ -24,7 +25,7 @@ class Work(commands.Cog):
     )
     async def work(self, ctx):
         guild=ctx.guild
-        person=ctx.person
+        person=ctx.author
         wallet = methods.find_create(person.id,guild)
         cooldown = config["work-cooldown"]
         guild_collection=db[str(guild.id)]
@@ -76,7 +77,7 @@ class Work(commands.Cog):
             {"id":  person.id },
             { "$set":{f'cooldown-work':time.time()} }
         )
-        lines = open('jobs.txt').read().splitlines()
+        lines = open('data/jobs.txt').read().splitlines()
         job =random.choice(lines)
         return await ctx.send(embed=simple_embed(True,f'You worked as {job} and earned {parsed_message}'))
     @commands.command(
@@ -119,7 +120,6 @@ class Work(commands.Cog):
         description='take a quiz for a cash prize',
         aliases=['qz']
     )       
-
     async def get_question(self, ctx):
         guild=ctx.guild
         person=ctx.author
@@ -155,6 +155,58 @@ class Work(commands.Cog):
             "time":time.time()
         })
         return await ctx.send(embed=simple_embed (True, question["question"]))
+    @commands.command(
+        name='see-work-levels',
+        description='look at all work levels',
+        aliases=['swl']
+    )       
+    async def see_work_levels(self, ctx):
+        guild=ctx.guild
+        person=ctx.author
+        guild_collection=db[str(guild.id)]
+        server_config =  guild_collection.find_one({
+            "type":"server","id"  : guild.id
+        })
+        print("server config is", server_config)
+        if server_config is None:
+            return await ctx.send(embed=simple_embed(False,"can't find the work conditional"))
+        embedVar = discord.Embed(
+            title="EU Economy Bot",
+            color=0x00ff00,
+            url=config["website"]
+        )
+        if "work-payoff" in server_config:
+            embedVar.add_field(name="work payoff", value= server_config["work-payoff"])
+        if "work-conditional" in server_config:
+            for condition in server_config["work-conditional"]:
+                print("condition is", condition)
+                embedVar.add_field(name=condition["name"], value=condition["condition"])
+        return await ctx.send(embed=embedVar)
+    @commands.command(
+        name='delete work leve;',
+        description='delete a work level by name',
+        aliases=['dwl']
+    )
+    @commands.has_permissions(administrator=True)       
+    async def delete_work(self, ctx, conditional_name):
+        guild_collection=db[str(ctx.guild.id)]
+        server_config =  guild_collection.find_one({
+            "type":"server","id"  : ctx.guild.id
+        })
+        print("server config is", server_config)
+        if server_config is None:
+            return await ctx.send(embed=simple_embed(False,"can't find the work conditional"))
+        if not "work-conditional" in server_config:
+            return await ctx.send(embed=simple_embed(False,"can't find the work conditional"))
+        matches = [x for x in server_config["work-conditional"] if x["name"]!=conditional_name]
+        if len(matches) ==len(server_config["work-conditional"]):
+            return await ctx.send(embed=simple_embed(False,"can't find the work conditional by that given name"))
+        guild_collection.update_one(
+            {"id":ctx.guild.id},
+            {"$set":{f'work-conditional': matches }}
+        )
+        return await ctx.send(embed=simple_embed(True,"ok it was deleted"))
+
 def setup(bot):
     bot.add_cog(Work(bot))
 

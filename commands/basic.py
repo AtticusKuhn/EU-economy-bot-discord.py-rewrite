@@ -1,7 +1,9 @@
 from discord.ext import commands
 from datetime import datetime as d
 from discord_utils.embeds import simple_embed
-
+import methods
+import discord 
+from config import config
 
 class Basic(commands.Cog):
     def __init__(self, bot):
@@ -63,6 +65,19 @@ class Basic(commands.Cog):
         command = [c for c in self.bot.commands if c.name==command_name]
         if len(command)>0:
             command=command[0]
+           # attributes= [a for a in dir(command) if not a.startswith('__')]
+           # embedVar = discord.Embed(
+           #     title="EU Economy Bot",
+           #     color=0x00ff00,
+           #     url=config["website"]
+           # )
+            #print("attributes is", attributes)
+            #for attr in attributes:
+            #    value_string=str(getattr(command,attr))
+            #    if value_string=="":
+            #        value_string="(none)"
+            #    embedVar.add_field(name=attr, value= value_string)
+            #return await ctx.send(embed=embedVar)
             return await ctx.send(embed=simple_embed(True,f'name: {command.name}\n description:{command.description}\n aliases:{", ".join(command.aliases)}'))
         return await ctx.send(embed=simple_embed(False,"can't find command"))
     @commands.command(
@@ -78,8 +93,30 @@ class Basic(commands.Cog):
         aliases=['a-c']
     )
     async def all_commands(self, ctx):
-        return_string=list(map(lambda command: f'{str(command)} - {str(command.description)}\n', self.bot.commands))
-        return await ctx.send(embed=simple_embed(True, " ".join(return_string)))
+        return_string=" ".join(list(map(lambda command: f'{str(command)} - {str(command.description)}\n', self.bot.commands)))
+        return_string+='\n remember that to see commands relating to a specific module, you can do help {module name}. \n also to get info on a command do info {command name}'
+        return await ctx.send(embed=simple_embed(True, return_string))
+    @commands.command(
+        name='whois',
+        description='see who satisifies a given condition',
+        aliases=['who']
+    )
+    async def whois(self, ctx, *condititons):
+        people = methods.whois(condititons, ctx.guild)
+        return_statement = ""
+        symbol = "\n"
+        if len(people)> 7:
+            symbol = ","
+        for index,person in enumerate(people):
+            if len(return_statement) > 700:
+                return_statement += f' and {len(people)-index} others'
+                break
+            return_statement = return_statement + f'<@{person}>{symbol}'
+        if return_statement == "":
+            return_statement = "(no people found)"
+        embedVar = discord.Embed(title="Result", description=f'Found {len(people)} People', color=0x00ff00)
+        embedVar.add_field(name="People", value=return_statement, inline=False)
+        await ctx.send(embed=embedVar)
 
 
 def setup(bot):

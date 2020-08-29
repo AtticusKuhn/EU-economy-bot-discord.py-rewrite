@@ -7,7 +7,6 @@ authors = ["Your Name <you@example.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 utils = "^1.0.1"
-webbot = "^0.33"
 config = "^0.5.0"
 consultor = "^0.2.0"
 flask = "^1.1.2"
@@ -16,6 +15,7 @@ discord = "^1.0.1"
 replit = "^2.0.0"
 wikipedia = "^1.4.0"
 textblob = "^0.15.3"
+webbot = "^0.33"
 
 [tool.poetry.dev-dependencies]
 

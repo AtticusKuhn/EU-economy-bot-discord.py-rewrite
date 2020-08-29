@@ -24,7 +24,7 @@ class Market(commands.Cog):
     async def insert_trade(self, ctx, wallet,offer, cost, *options):
         person=ctx.author
         guild= ctx.guild
-        message = ctx
+        message=ctx.message
         if wallet !="admins":
             found_wallet=methods.get_wallet(guild,wallet)
             if not found_wallet[0]:
@@ -82,8 +82,8 @@ class Market(commands.Cog):
             offer_schema["offer_time"]=int(offer_time)
         if "people_restrictions" in locals():
             offer_schema["people_restrictions"] = people_restrictions
-            guild_collection.insert_one(offer_schema)
-            return  await ctx.send(embed=simple_embed(True, f'succesful. In order to accept this trade, type "$accept {message.id} (ping wallet)", or you may react to the original message with ✅, in which case the money will be deducted from your personal account.'))
+        guild_collection.insert_one(offer_schema)
+        return  await ctx.send(embed=simple_embed(True, f'succesful. In order to accept this trade, type "$accept {message.id} (ping wallet)", or you may react to the original message with ✅, in which case the money will be deducted from your personal account.'))
     @commands.command(
         name='accept-trade',
         description='put a new trade on the market',
@@ -91,7 +91,7 @@ class Market(commands.Cog):
     )
     async def fulfill_trade(self, ctx,wallet, message):
         guild = ctx.guild
-        person = ctx.authpr
+        person = ctx.author
         found_wallet = methods.get_wallet(guild, wallet)
         if not found_wallet[0]:
             return  await ctx.send(embed=simple_embed(False,"cant find wallet"))
@@ -166,6 +166,63 @@ class Market(commands.Cog):
                 { "$inc":{"uses":-1} }
             )
         return  await ctx.send(embed=simple_embed(True,"success"))
+
+    @commands.command(
+        name='view-market',
+        description='see all trades on the market right now',
+        aliases=['vmar']
+    )
+    async def view_market(self, ctx):
+        guild_collection =db[str(ctx.guild.id)]
+        return_string=""
+        offers=list(guild_collection.find({"type":"trade"}))
+        for offer in offers:
+            del offer["_id"]
+            return_string+=f'{str(offer)}\n'
+        return await ctx.send(embed=simple_embed(True, return_string[0:2000]))
+    @commands.command(
+        name='delete-all-trades',
+        description='delete all trades currently on the market',
+        aliases=['deltrades']
+    )
+    async def delete_all_trades(self, ctx):
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send(embed=simple_embed(False,"must be admin"))
+        guild_collection =db[str(ctx.guild.id)]
+        guild_collection.delete_many({"type":"trade"})
+        await ctx.send(embed=simple_embed(True, "all trades deleted"))
+    @commands.command(
+        name='inspect-trade',
+        description='get info on a trade',
+        aliases=['insp']
+    )
+    async def ispect_trade(self,ctx, id:int):
+        guild_collection =db[str(ctx.guild.id)]
+        print(id)
+        trade= guild_collection.find_one({"type":"trade","message_id":id})
+        if trade is None:
+            return await ctx.send(embed=simple_embed(False, "cannot find that trade"))
+        embedVar = discord.Embed(
+            title="EU Economy Bot",
+            color=0x00ff00,
+            url=config["website"]
+        )
+        if "_id" in trade:
+            del trade["_id"]
+        if not "uses" in trade:
+            trade["uses"]="(no usage limit set for this trade)"
+        if not "offer_time" in trade:
+            trade["offer_time"]="(no time limit set for this trade)"
+        if not "people_restrictions" in trade:
+            trade["people_restrictions"]="(no persoal limit set for this trade)"
+        for attribute in trade:
+            print(attribute, "name")
+            if trade[attribute] is None or trade[attribute]=="":
+                trade[attribute] ="(none)"
+            print(trade[attribute], "value")
+            embedVar.add_field(name=attribute,value=trade[attribute])
+        return await ctx.send(embed=embedVar)
+        
 def setup(bot):
     bot.add_cog(Market(bot))
 

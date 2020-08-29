@@ -23,7 +23,9 @@ class Send(commands.Cog):
         aliases=['s','pay']
     )
     async def return_send_result(self, ctx, from_wallet, to_wallet, amount ):
-        return await ctx.send(embed=simple_embed(*send( ctx, from_wallet, to_wallet, amount )))
+        e= await send( ctx, from_wallet, to_wallet, amount )
+        print(e)
+        return await ctx.send(embed=simple_embed(*e))
     @commands.command(
         name='send-each',
         description='send each person an ammount of money',
@@ -89,7 +91,7 @@ async def send( ctx, from_wallet, to_wallet, amount ):
                 { "$inc":{f'balance{currency}':amount} }
             )
             log_money(ctx.guild,f'<@{from_wallet}> sent {amount} from {from_wallet_id[1].mention } to {to_wallet_id[1].mention}')
-            return (True, "yeet")
+            return (True, "successful")
         else:
             return (False, f'insuffiecent funds for transfer.')
     else:
