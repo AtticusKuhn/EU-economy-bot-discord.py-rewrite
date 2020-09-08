@@ -19,9 +19,9 @@ class Basic(commands.Cog):
         await msg.edit(content=f'Pong!\nOne message round-trip took {(d.timestamp(d.now())-start) * 1000}ms.')
         return
     @commands.command(
-        name='help',
+        name='oldhelp',
         description='gives a list of possible commands',
-        aliases=['commands']
+        aliases=['oldcommands']
     )
     async def help(self, ctx, cog=""):
         if cog=="":
@@ -90,10 +90,10 @@ class Basic(commands.Cog):
     @commands.command(
         name='all-commands',
         description='gives a list of all implemented commands',
-        aliases=['a-c']
+        aliases=['a-c',"help", "commands"]
     )
     async def all_commands(self, ctx):
-        return_string=" ".join(list(map(lambda command: f'{str(command)} - {str(command.description)}\n', self.bot.commands)))
+        return_string=" ".join(list(map(lambda command: f'${str(command)} - {str(command.description)}\n', self.bot.commands)))
         return_string+='\n remember that to see commands relating to a specific module, you can do help {module name}. \n also to get info on a command do info {command name}'
         return await ctx.send(embed=simple_embed(True, return_string))
     @commands.command(

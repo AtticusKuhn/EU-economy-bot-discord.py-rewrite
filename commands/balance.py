@@ -14,9 +14,11 @@ class Balance(commands.Cog):
     @commands.command(
         name='balance',
         description='get the balance in an account',
-        aliases=['b']
+        aliases=['b', "bal", "my-bal"]
     )
-    async def balance(self, ctx, wallet):
+    async def balance(self, ctx, wallet=None):
+        if wallet is None:
+            wallet=ctx.author.mention
         get_wallet_result = methods.get_wallet(ctx.guild, wallet)        
         if(get_wallet_result[0]):
             found_wallet = methods.find_create(get_wallet_result[1].id, ctx.guild)
@@ -26,7 +28,7 @@ class Balance(commands.Cog):
                     print(1)
                     if ctx.author.id in found_wallet["permissions"]["view"]["false"]:
                         print(2)
-                        return (False, "you do not have permission to see this wallet")
+                        return await ctx.send(embed=simple_embed((False, "you do not have permission to see this wallet")))
             res = ""
             for key,value in found_wallet.items():
                 if("balance" in key):

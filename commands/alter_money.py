@@ -64,7 +64,7 @@ class Alter_Money(commands.Cog):
     @commands.command(
         name='set-money',
         description='set the amount of money',
-        aliases=['set-bal']
+        aliases=['set-bal', "set-balance"]
     )
     async def set_money(self, ctx, wallet, amount):
         if("-" in amount):
@@ -74,24 +74,24 @@ class Alter_Money(commands.Cog):
             currency = amount_array[1]
         if 'currency' in locals():
             if(not methods.valid_item(currency)):
-                return (False, "invaid item name")
+                return await ctx.send(embed=simple_embed(False, "invaid item name"))
         if(not amount.isdigit()):
             return (False, "incorrect ammount")
         guild_collection =db[str(ctx.guild.id)]
         to_wallet = methods.get_wallet(ctx.guild, wallet)
         if(not to_wallet[0]):
-            return to_wallet
+            return await ctx.send(embed=simple_embed(False,to_wallet))
         found_wallet = methods.find_create(to_wallet[1].id, ctx.guild)
         if 'currency' in locals():
             guild_collection.update_one(
                 {"id":  to_wallet[1].id },
                 { "$set":{f'balance-{currency}':int(amount)} }
             )
-            return (True, f'balance was set to {amount}')
+            return await ctx.send(embed=simple_embed(True, f'balance was set to {amount}'))
         guild_collection.update_one(
             {"id":  to_wallet[1].id },
             { "$set":{"balance":int(amount)} }
         )
-        return (True, f'balance was set to {amount}')
+        return await ctx.send(embed=simple_embed(True, f'balance was set to {amount}'))
 def setup(bot):
     bot.add_cog(Alter_Money(bot))
