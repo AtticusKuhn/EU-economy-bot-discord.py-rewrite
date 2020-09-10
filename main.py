@@ -27,12 +27,20 @@ async def on_ready():
 @bot.event
 async def on_message(ctx):
     await message(bot, ctx)   
-    print('after message called')
     await bot.process_commands(ctx)
 @bot.event
 async def on_command_error(ctx,error):
-    await command_error(ctx, error)
+    await command_error(bot, ctx, error)
 
+
+#@bot.before_invoke
+#async def before(ctx):
+#    print("before invoke", ctx.message.content)
+#    if ctx.message.content =="$E":
+#        ctx.message.content=""
+#        ctx.message="E"
+#        print("message", ctx.message)
+#    print("after invoke", ctx)
 keep_alive.keep_alive()# Start the server
 
 bot.run(os.environ.get('DISCORD_BOT_SECRET'), bot=True, reconnect=True)# Finally, login the bot

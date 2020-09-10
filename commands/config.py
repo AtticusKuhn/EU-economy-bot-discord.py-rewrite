@@ -18,7 +18,7 @@ class Config(commands.Cog):
         description='allow admins to change the server settings',
         aliases=['s-c']
     )
-    async def set_config(self, ctx, wallet,setting_name, option):
+    async def set_config(self, ctx,setting_name, option):
         guild = ctx.guild
         if not ctx.author.guild_permissions.administrator:
             return await ctx.send(embed=simple_embed(False,"must be admin"))
@@ -74,7 +74,35 @@ class Config(commands.Cog):
             })
         server_config =  guild_collection.find_one({"type":"server","id"  : guild.id})
         return await ctx.send(embed=simple_embed( True, str(server_config)))
-
+    @commands.command(
+        name='prune',
+        description='delete all wallets that no longer exist ',
+        aliases=['pr']
+    )
+    @commands.has_permissions(administrator=True)       
+    async def prune(self, ctx):
+        guild_collection =db[str(ctx.guild.id)]
+        all_wallets= guild_collection.find({})
+        return_message=""
+        deleting = []
+        for wallet in all_wallets:
+            if "type" in wallet:                
+                if wallet["type"]=="personal" or wallet["type"]=="role":
+                    #print("trying", wallet["name"])
+                    found = methods.get_wallet(ctx.guild,str(wallet["id"]))
+                    #print("found is ", found)
+                    if not found[0]:
+                        return_message+=f'\n deleted {wallet["name"]}'
+                        deleting.append(wallet["_id"])
+               # if :
+               #     print("trying", wallet["name"])
+               #     if wallet["type"]=="personal":
+               #         if not  methods.get_wallet(ctx.guild, str(wallet["id"]))[0]:
+               #             return_message+=f'\n deleted {wallet["name"]}'
+        guild_collection.remove({'_id':{'$in':deleting}})
+        if return_message=="":
+            return_message="deleted no one"
+        return await ctx.send(embed=simple_embed( True, return_message))
         
 def setup(bot):
     bot.add_cog(Config(bot))

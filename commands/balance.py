@@ -5,8 +5,9 @@ from pymongo import MongoClient
 client = MongoClient(os.environ.get("MONGO_URL"))
 db = client.database
 
-import methods
+#import methods
 from discord_utils.embeds import simple_embed
+from database_utils.wallet_converter import WalletConverter
 
 class Balance(commands.Cog):
     def __init__(self, bot):
@@ -16,26 +17,26 @@ class Balance(commands.Cog):
         description='get the balance in an account',
         aliases=['b', "bal", "my-bal"]
     )
-    async def balance(self, ctx, wallet=None):
-        if wallet is None:
-            wallet=ctx.author.mention
-        get_wallet_result = methods.get_wallet(ctx.guild, wallet)        
-        if(get_wallet_result[0]):
-            found_wallet = methods.find_create(get_wallet_result[1].id, ctx.guild)
-            print(found_wallet,"found_wallet")
-            if "permissions" in found_wallet:
-                if "view" in found_wallet["permissions"]:
-                    print(1)
-                    if ctx.author.id in found_wallet["permissions"]["view"]["false"]:
-                        print(2)
-                        return await ctx.send(embed=simple_embed((False, "you do not have permission to see this wallet")))
-            res = ""
-            for key,value in found_wallet.items():
-                if("balance" in key):
-                    res = res+ f'{key}: {value}\n'
-            return await ctx.send(embed=simple_embed(True,f'the balance is:\n {res}'))
-        else:
-            return await ctx.send(embed=simple_embed( False, "doesn't exist"))
+    async def balance(self, ctx, wallet:WalletConverter):
+       # if wallet is None:
+       #     wallet=ctx.author.mention
+       # get_wallet_result = methods.get_wallet(ctx.guild, wallet)        
+       # if(get_wallet_result[0]):
+       #     found_wallet = methods.find_create(get_wallet_result[1].id, ctx.guild)
+       #     print(found_wallet,"found_wallet")
+        if "permissions" in wallet:
+            if "view" in wallet["permissions"]:
+                print(1)
+                if ctx.author.id in wallet["permissions"]["view"]["false"]:
+                    print(2)
+                    return await ctx.send(embed=simple_embed((False, "you do not have permission to see this wallet")))
+        res = ""
+        for key,value in wallet.items():
+            if("balance" in key):
+                res = res+ f'{key}: {value}\n'
+        return await ctx.send(embed=simple_embed(True,f'the balance is:\n {res}'))
+       # else:
+       #     return await ctx.send(embed=simple_embed( False, "doesn't exist"))
 
 def setup(bot):
     bot.add_cog(Balance(bot))

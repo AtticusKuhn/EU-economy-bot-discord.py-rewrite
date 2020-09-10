@@ -7,8 +7,6 @@ async def ready(bot):
     replit.clear()
     print(f'Logged in as {bot.user.name} - {bot.user.id}')
     bot.remove_command('help')
-    # Removes the help command
-    # Make sure to do this before loading the cogs
     for cog in cogs:
         print("cog is",cog)
         bot.load_extension(f'commands.{cog}')
