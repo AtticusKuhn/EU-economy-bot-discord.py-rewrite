@@ -7,7 +7,7 @@ client = MongoClient(os.environ.get("MONGO_URL"))
 db = client.database
 
 import methods
-from discord_utils.embeds import simple_embed
+from discord_utils.embeds import simple_embed, dict_to_embed
 from config import config
 
 class Config(commands.Cog):
@@ -73,7 +73,8 @@ class Config(commands.Cog):
                 "default_balance": config["default_balance"]
             })
         server_config =  guild_collection.find_one({"type":"server","id"  : guild.id})
-        return await ctx.send(embed=simple_embed( True, str(server_config)))
+        del server_config["_id"]
+        return await ctx.send(embed=dict_to_embed( server_config))
     @commands.command(
         name='prune',
         description='delete all wallets that no longer exist ',

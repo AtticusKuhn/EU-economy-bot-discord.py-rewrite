@@ -18,12 +18,6 @@ class Balance(commands.Cog):
         aliases=['b', "bal", "my-bal"]
     )
     async def balance(self, ctx, wallet:WalletConverter):
-       # if wallet is None:
-       #     wallet=ctx.author.mention
-       # get_wallet_result = methods.get_wallet(ctx.guild, wallet)        
-       # if(get_wallet_result[0]):
-       #     found_wallet = methods.find_create(get_wallet_result[1].id, ctx.guild)
-       #     print(found_wallet,"found_wallet")
         if "permissions" in wallet:
             if "view" in wallet["permissions"]:
                 print(1)
@@ -35,8 +29,6 @@ class Balance(commands.Cog):
             if("balance" in key):
                 res = res+ f'{key}: {value}\n'
         return await ctx.send(embed=simple_embed(True,f'the balance is:\n {res}'))
-       # else:
-       #     return await ctx.send(embed=simple_embed( False, "doesn't exist"))
 
 def setup(bot):
     bot.add_cog(Balance(bot))

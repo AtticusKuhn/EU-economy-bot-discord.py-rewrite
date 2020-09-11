@@ -74,11 +74,6 @@ async def send( ctx, from_wallet, to_wallet, amount ):
     except:
         return (False,"invalid amount" )
     guild_collection =db[str(ctx.guild.id)]
-    #from_wallet = methods.get_wallet(ctx.guild, from_wallet)
-    #to_wallet_id =methods.get_wallet(ctx.guild, to_wallet)
-    #if(from_wallet_id[0] and to_wallet_id[0]):
-     #   sender_account=methods.find_create(from_wallet_id[1].id,ctx.guild)
-     #   reciever_account=methods.find_create(to_wallet_id[1].id,ctx.guild)
     print("from wallet", from_wallet)
     print("balance is ",f'balance{currency}')
     print(from_wallet[f'balance{currency}'])
@@ -99,5 +94,3 @@ async def send( ctx, from_wallet, to_wallet, amount ):
         return (True, "successful")
     else:
         return (False, f'insuffiecent funds for transfer.')
-    #else:
-    #    return (False, "cannot find wallet")

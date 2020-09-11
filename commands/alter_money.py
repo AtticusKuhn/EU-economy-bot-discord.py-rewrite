@@ -30,15 +30,10 @@ class Alter_Money(commands.Cog):
             amount = int(amount)
         except:
             return await ctx.send(embed=simple_embed(False,"invalid amount" ))
-        
         guild_collection =db[str(ctx.guild.id)]
-       # wallet_id = methods.get_wallet(ctx.guild, wallet)
-       # if not wallet_id[0]:
-       #     return await ctx.send(embed=simple_embed(False,"invalid wallet name"))
         can_print = False
         if person.guild_permissions.administrator:
             can_print=True
-        #account_of_printing =methods.find_create(wallet_id[1].id,ctx.guild)
         if "permissions" in account_of_printing:
             if "print" in account_of_printing["permissions"]:
                 if person.id in account_of_printing["permissions"]["print"]["true"]:
@@ -69,31 +64,55 @@ class Alter_Money(commands.Cog):
     )
     @commands.has_permissions(administrator=True)   
     async def set_money(self, ctx, wallet:WalletConverter, amount):
-        if("-" in amount):
-            amount_array = amount.split("-")
-            print(amount.split("-"))
-            amount = amount_array[0]
-            currency = amount_array[1]
-        if 'currency' in locals():
-            if(not methods.valid_item(currency)):
-                return await ctx.send(embed=simple_embed(False, "invaid item name"))
-        if(not amount.isdigit()):
-            return await ctx.send(embed=simple_embed (False, "incorrect ammount"))
-        guild_collection =db[str(ctx.guild.id)]
-        #to_wallet = methods.get_wallet(ctx.guild, wallet)
-        #if(not to_wallet[0]):
-        #    return await ctx.send(embed=simple_embed(False,to_wallet))
-        #found_wallet = methods.find_create(to_wallet[1].id, ctx.guild)
-        if 'currency' in locals():
-            guild_collection.update_one(
-                {"_id":  wallet["_id"] },
-                { "$set":{f'balance-{currency}':int(amount)} }
-            )
-            return await ctx.send(embed=simple_embed(True, f'balance was set to {amount}'))
-        guild_collection.update_one(
-            {"_id":  wallet["_id"]  },
-            { "$set":{"balance":int(amount)} }
-        )
-        return await ctx.send(embed=simple_embed(True, f'balance was set to {amount}'))
+        result = await set_money(ctx.guild, wallet, amount)
+        return await ctx.send(embed=simple_embed(*result))
+    @commands.command(
+        name='set-money-each',
+        description='set the amount of money of each person who satisfies a condition',
+        aliases=['set-bal-ea', "set-balance-each","sbe"]
+    )
+    @commands.has_permissions(administrator=True)    
+    async def set_balance_each(self, ctx, amount,*, condition): 
+        print("amount is", amount)
+        print("condition is", condition)
+        return_statement = ""
+        successful_transfer = True
+        people = methods.whois(condition.split(" "), ctx.guild)
+        for person in people:
+            wc = WalletConverter()
+            person = await wc.convert(ctx, f'<@{person}>')
+            send_result = await set_money(ctx.guild, person,amount)
+            if  send_result[0]:
+                return_statement = return_statement + f'<@{person["id"]}> - success\n'
+            else:
+                return_statement = return_statement + f'<@{person["id"]}> - error: {send_result[1]}\n'
+                successful_transfer = False
+        if return_statement == "":
+            return_statement = "(no people found)"
+        return await ctx.channel.send(embed=simple_embed(successful_transfer,return_statement ))
 def setup(bot):
     bot.add_cog(Alter_Money(bot))
+
+
+async def set_money(guild, wallet, amount):
+    if("-" in amount):
+            amount_array = amount.split("-")
+            amount = amount_array[0]
+            currency = amount_array[1]
+    if 'currency' in locals():
+        if(not methods.valid_item(currency)):
+            return  (False, "invaid item name")
+    if(not amount.isdigit()):
+        return  (False, "incorrect ammount")
+    guild_collection =db[str(guild.id)]
+    if 'currency' in locals():
+        guild_collection.update_one(
+            {"_id":  wallet["_id"] },
+            { "$set":{f'balance-{currency}':int(amount)} }
+        )
+        return (True, f'balance was set to {amount}')
+    guild_collection.update_one(
+        {"_id":  wallet["_id"]  },
+        { "$set":{"balance":int(amount)} }
+    )
+    return (True, f'balance was set to {amount}')

@@ -10,5 +10,7 @@ config = {
     "max_length":100,
     "work-payoff":100,
     "work-cooldown":1000,
-    "default_balance":100
+    "default_balance":100,
+    "wallet_settings":[ "access", "edit-settings", "view","print"],
+
 }

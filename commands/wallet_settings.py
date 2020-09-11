@@ -1,4 +1,4 @@
-from config import CONFIG
+from config import config
 from database_utils.wallet_converter import WalletConverter
 
 import os
@@ -17,17 +17,11 @@ class WalletSettings(commands.Cog):
         description='change settings of a wallet',
         aliases=['sws']
     )
-    def set_settings(self, ctx, account:WalletConverter, setting_name, value):
-        if not setting_name in CONFIG["wallet_settings"] and not setting_name.startswith("print-"):
+    async def set_settings(self, ctx, account:WalletConverter, setting_name, value):
+        if not setting_name in config["wallet_settings"] and not setting_name.startswith("print-"):
             return await ctx.send(embed=simple_embed  (False, "invalid setting name"))
         value = (value.lower() == "true")
         person = ctx.author
-        #found_wallet =methods.get_wallet(guild, wallet)
-        #found_target = methods.get_wallet(guild, target)
-        #if not found_wallet[0]:
-        #    return (False, "wallet does not exist")
-        #if not found_target[0]:
-        #    return (False, "target does not exist")
         guild_collection =db[str(ctx.guild.id)]
         account =guild_collection.find_one({"id":account["id"]})
         if not account:

@@ -183,7 +183,7 @@ class Work(commands.Cog):
                 embedVar.add_field(name=condition["name"], value=condition["condition"])
         return await ctx.send(embed=embedVar)
     @commands.command(
-        name='delete work leve;',
+        name='delete work level',
         description='delete a work level by name',
         aliases=['dwl']
     )

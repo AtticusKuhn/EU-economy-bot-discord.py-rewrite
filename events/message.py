@@ -11,6 +11,8 @@ db = client.database
 async def message(bot, ctx):
     if ctx.author.bot:
         return ## don't reply to other bots
+    if not ctx.guild:
+        return await ctx.channel.send(embed=simple_embed(False,"only work in a guild"))
     #print("message has been called")
     ###quiz
     answer = answer_question(ctx,ctx.content[1:])
@@ -24,3 +26,4 @@ async def message(bot, ctx):
     for result in execution_result:
         if result is not None:
             await ctx.channel.send(embed=simple_embed(result[0],result[1]))
+    await bot.process_commands(ctx)

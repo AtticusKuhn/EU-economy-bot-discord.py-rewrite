@@ -20,7 +20,7 @@ class Basic(commands.Cog):
         return
     @commands.command(
         name='oldhelp',
-        description='gives a list of possible commands',
+        description='gives a list of old commands from old version',
         aliases=['oldcommands']
     )
     async def help(self, ctx, cog=""):

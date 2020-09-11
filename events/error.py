@@ -5,6 +5,7 @@ import re
 from Levenshtein import distance
 
 async def command_error(bot, ctx, error):
+    print(error, "error")
     if isinstance(error, CommandNotFound):
         regex = re.search(r'"([A-Za-z0-9_\./\\-]*)"', str(error))
         false_command = regex.group()
@@ -23,7 +24,6 @@ async def command_error(bot, ctx, error):
                     dis= test_distance
                     current_command= alias
         return await ctx.send(embed=simple_embed(False, f' I do not recognize that command. It is closest to "{current_command}"'))
-    print(error, "error")
     await ctx.send(embed =simple_embed(False, str(error)))
     etype = type(error)
     trace = error.__traceback__

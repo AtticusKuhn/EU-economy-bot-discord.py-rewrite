@@ -27,7 +27,7 @@ async def on_ready():
 @bot.event
 async def on_message(ctx):
     await message(bot, ctx)   
-    await bot.process_commands(ctx)
+
 @bot.event
 async def on_command_error(ctx,error):
     await command_error(bot, ctx, error)

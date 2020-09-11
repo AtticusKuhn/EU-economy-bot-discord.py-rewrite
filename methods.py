@@ -165,7 +165,7 @@ def whois(message_array, guild):
             continue
         for person in guild.members:
             for perm,value in iter(person.guild_permissions):
-                print(perm,value)
+                #print(perm,value)
                 if value and perm == word:
                     people.add(person.id)
         for person in guild.members:

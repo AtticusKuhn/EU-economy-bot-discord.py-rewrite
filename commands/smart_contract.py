@@ -11,7 +11,7 @@ import methods
 from discord_utils.embeds import simple_embed
 from config import config
 from commands.send import send
-from commands.alter_money import Alter_Money
+from commands.alter_money import set_money
 
 class Smart_contract(commands.Cog):
     def __init__(self, bot):
@@ -81,7 +81,7 @@ def execute_contracts(guild,array_of_contracts ,context, context_name):
         safe_dict = dict([ (k, locals().get(k, None)) for k in safe_list ]) 
         safe_dict["send"] = send
         safe_dict["whois"] = methods.whois
-        safe_dict["set_money"] = Alter_Money.set_money
+        safe_dict["set_money"] = set_money
         safe_dict["guild"]=guild
         safe_dict['time'] = time
         safe_dict[context_name]=context
