@@ -12,23 +12,37 @@ I wanted a Purely Economic bot for my EU simulator server. I tried to use premad
 This bot focuses on flexability and freedom, allowing
 members and admins to bring the most customizability to any discord server.
 
-# Commands that will be added
+# Commands list
 
-- $help - shows all commands
-- $send (ping person) (wallet name) (amount) - sends an amount to a person from that wallet
-- $request (ping person) (amount) - requests some money from a person which her or she can accept or deny
-- $tax (ping person) (amount) (wallet name) - if you have the role "taxation" take that amount of money from the person and put it in the wallet
-- $print (wallet name) (amount) - creates an amount of money in that wallet if you have the role "printer"
-- $burn (wallet name) (amount) - deletes that much money from a wallet
-- $balance (wallet name) - returns the amount of money in the wallet
-- DEPRECATED $config (config option) (config setting) - if you have the admin role, configure the bot. 
-    * Earn method - can be message send, time online, length sent, or none.
-    * Earn amount - how much money will be earned when someone earns money
-- $stats (wallet)- See stats on the economy of the server, such as inflation, GDP, and M0.
-- $smart-contract (trigger) (code) - set up a smart contract
-- $send-each (condition) (amount) - send money to each person who satisfies that condition
-- $whois (condition) - returns which people satisfy condition. Useful for send-each
-
+- $prune - delete all wallets that no longer exist
+- $ping - The ping command. Tests server lag
+- $print - add an amount of money to an account
+- $graph - graph the money over time of an account
+- $set-wallet-settings - change settings of a wallet
+- $oldhelp - gives a list of old commands from old version
+- $set-money - set the amount of money
+- $info - gives info on a secpfic command
+- $set-money-each - set the amount of money of each person who satisfies a condition
+- $links - Show relevant links to this bot
+- $add-smart-contract - add a new smart contract
+- $all-commands - gives a list of all implemented commands
+- $clear-contracts - delete all your smart contracts
+- $insert-trade - put a new trade on the market
+- $whois - see who satisifies a given condition
+- $accept-trade - put a new trade on the market
+- $view-market - see all trades on the market right now
+- $work - gain an amount of money
+- $delete-all-trades - delete all trades currently on the market
+- $work-conditional - allow admins to set different work amounts for different roles
+- $inspect-trade - get info on a trade
+- $quiz - take a quiz for a cash prize
+- $see-work-levels - look at all work levels
+- $set-config - allow admins to change the server settings
+- $balance - get the balance in an account
+- $send - send an ammount of money
+- $delete work level - delete a work level by name
+- $view-config - see what the current server config is
+- $send-each - send each person an ammount of money
 
 
 
