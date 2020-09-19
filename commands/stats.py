@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 import os
 from pymongo import MongoClient
+import pymongo
 client = MongoClient(os.environ.get("MONGO_URL"))
 db = client.database
 
@@ -36,6 +37,18 @@ class Stats(commands.Cog):
                 return await ctx.send(embed=simple_embed(False,"can't find any stats"))
         else:
             await ctx.send(embed=simple_embed(False,"error"))
-    
+    @commands.command(
+        name='leaderboard',
+        description='get the top amount of money ',
+        aliases=['lb']
+    )   
+    async def leaderboard( self, ctx, currency=""):
+        if currency !="":
+            currency = "-"+currency
+        guild_collection =db[str(ctx.guild.id)]
+        wallets = list(guild_collection.find().sort(f'balance{currency}', pymongo.DESCENDING))
+        top_10 = wallets[:10]
+        return_string = "\n".join(list(map(lambda wallet: f'{wallet["name"] if "name" in wallet else "(no name found)"} : {wallet["balance"+currency] if "balance"+currency in wallet else "(no balance found)"}', top_10)))
+        await ctx.send(embed=simple_embed(True,return_string))
 def setup(bot):
     bot.add_cog(Stats(bot))

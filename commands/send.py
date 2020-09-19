@@ -21,7 +21,7 @@ class Send(commands.Cog):
     @commands.command(
         name='send',
         description='send an ammount of money',
-        aliases=['s','pay']
+        aliases=['s']
     )
     async def return_send_result(self, ctx, from_wallet:WalletConverter, to_wallet:WalletConverter, amount ):
         e= await send( ctx, from_wallet, to_wallet, amount )
@@ -53,7 +53,16 @@ class Send(commands.Cog):
             embedVar = discord.Embed(title="Result", color=0xff0000)
         embedVar.add_field(name="People", value=return_statement, inline=False)
         return await ctx.send(embed=embedVar)
-
+    @commands.command(
+        name='pay',
+        description='send an ammount of money from your personal account. Like send but with 1 less arguement',
+        aliases=['py', "directsend"]
+    )  
+    async def pay(self, ctx, to_wallet:WalletConverter, amount ):
+        wc  = WalletConverter()
+        from_wallet = wc.convert(ctx,ctx.author.mention )
+        result= await send( ctx, from_wallet, to_wallet, amount )
+        return await ctx.send(embed=simple_embed(*result))
 
 def setup(bot):
     bot.add_cog(Send(bot))
