@@ -41,7 +41,7 @@ def create(guild, wallet_ping):
                 "type"   :"personal",
                 "balance": int(default_balance)
              })
-            return_wallet = guild_collection.find_one({"id":return_wallet.inserted_id})
+            #return_wallet = guild_collection.find_one({"_id":return_wallet.inserted_id})
         else:
             return_wallet = guild_collection.insert_one({
                 "name"   :found_role.name,
@@ -49,7 +49,7 @@ def create(guild, wallet_ping):
                 "type"   :"role",
                 "balance": int(default_balance)
              })
-            return_wallet = guild_collection.find_one({"_id":return_wallet.inserted_id})
+        return_wallet = guild_collection.find_one({"_id":return_wallet.inserted_id})
         print("create will return", return_wallet)
         return (True, "created",return_wallet)
     else:

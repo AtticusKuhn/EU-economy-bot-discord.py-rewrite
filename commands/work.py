@@ -246,3 +246,12 @@ def answer_question(ctx, answer):
     if answer in question["question"]["similar_words"]:
         return (True, f'the correct answer was {question["question"]["answer"]}, but that was close enough to be correct.')
     return (True, "your balance has been increased by one")
+
+
+
+def message_money(person,guild):
+    wallet = methods.find_create(person.id,guild)
+    server_config  =methods.get_server_config(guild.id)
+    message_cooldown = config[""]
+   # if "message-cooldown" in wallet:
+  #      if 

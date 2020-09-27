@@ -23,7 +23,8 @@ async def message(bot, ctx):
     message_contracts = guild_collection.find({"trigger":"message"})
     execution_result = execute_contracts(ctx.guild,message_contracts, ctx, "message" )
     #print(execution_result)
-    for result in execution_result:
-        if result is not None:
-            await ctx.channel.send(embed=simple_embed(result[0],result[1]))
+    if execution_result is not None:
+        for result in execution_result:
+            if result is not None:
+                await ctx.channel.send(embed=simple_embed(result[0],result[1]))
     await bot.process_commands(ctx)

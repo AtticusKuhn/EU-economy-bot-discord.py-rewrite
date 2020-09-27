@@ -5,6 +5,7 @@ import threading
 import os
 from pymongo import MongoClient
 from  database_utils.create import create
+from config import config
 client = MongoClient(os.environ.get("MONGO_URL"))
 db = client.database
 def is_role(server_roles, role_id):
@@ -212,4 +213,20 @@ def time_to_seconds(time:str):
     if time.isdigit():
         return (True,int(time))
     #if re.match(r"^(\d+h)?(\d+m)?(\d+s)?$", time):
-        
+def get_server_config(guild_id):
+    guild_collection =db[str(guild_id)]
+    server_config =  guild_collection.find_one({
+        "type":"server",
+        "id"  : guild_id
+    })    
+    if(server_config is None):
+         guild_collection.insert_one({
+            "type":"server",
+            "id":guild_id,
+            "default_balance": config["default_balance"]
+        })
+    server_config =  guild_collection.find_one({
+        "type":"server",
+        "id"  : guild_id
+    })    
+    return server_config

@@ -24,7 +24,7 @@ class Send(commands.Cog):
         aliases=['s']
     )
     async def return_send_result(self, ctx, from_wallet:WalletConverter, to_wallet:WalletConverter, amount ):
-        e= await send( ctx, from_wallet, to_wallet, amount )
+        e= await send( ctx.guild,ctx.author, from_wallet, to_wallet, amount )
         print(e)
         return await ctx.send(embed=simple_embed(*e))
     @commands.command(
@@ -38,7 +38,7 @@ class Send(commands.Cog):
         return_statement = ""
         successful_transfer = True
         for person in people:
-            send_result = await send(ctx, from_wallet, await wc.convert(ctx,f'<@{person}>'), amount)
+            send_result = await send(ctx.guild,ctx.author, from_wallet, await wc.convert(ctx,f'<@{person}>'), amount)
             print("send_result",send_result)
             if  send_result[0]:
                 return_statement = return_statement + f'<@{person}> - success\n'
@@ -61,14 +61,15 @@ class Send(commands.Cog):
     async def pay(self, ctx, to_wallet:WalletConverter, amount ):
         wc  = WalletConverter()
         from_wallet = wc.convert(ctx,ctx.author.mention )
-        result= await send( ctx, from_wallet, to_wallet, amount )
+        result= await send( ctx.guild,ctx.author, from_wallet, to_wallet, amount )
         return await ctx.send(embed=simple_embed(*result))
 
 def setup(bot):
     bot.add_cog(Send(bot))
 
-async def send( ctx, from_wallet, to_wallet, amount ):
-    if not methods.can_access_wallet(ctx.guild, ctx.author.id, f'<@{from_wallet["id"]}>'):
+async def send( guild, author, from_wallet, to_wallet, amount ):
+
+    if not methods.can_access_wallet(guild, author.id, f'<@{from_wallet["id"]}>'):
         return (False, "cannot access wallet")
     currency=""
     if "-" in amount:
@@ -82,7 +83,7 @@ async def send( ctx, from_wallet, to_wallet, amount ):
         amount = int(amount)
     except:
         return (False,"invalid amount" )
-    guild_collection =db[str(ctx.guild.id)]
+    guild_collection =db[str(guild.id)]
     print("from wallet", from_wallet)
     print("balance is ",f'balance{currency}')
     print(from_wallet[f'balance{currency}'])
@@ -99,7 +100,7 @@ async def send( ctx, from_wallet, to_wallet, amount ):
             {"id":  to_wallet["id"] },
             { "$inc":{f'balance{currency}':amount} }
         )
-        log_money(ctx.guild,f'{ctx.author.mention} sent {amount} from <@{from_wallet["id"] }> to <@{to_wallet["id"]}>')
+        log_money(guild,f'{author.mention} sent {amount} from <@{from_wallet["id"] }> to <@{to_wallet["id"]}>')
         return (True, "successful")
     else:
         return (False, f'insuffiecent funds for transfer.')

@@ -6,13 +6,13 @@ import os
 from pymongo import MongoClient
 client = MongoClient(os.environ.get("MONGO_URL"))
 db = client.database
-
+import discord
 import methods
 from discord_utils.embeds import simple_embed
 from config import config
 from commands.send import send
 from commands.alter_money import set_money
-
+import traceback
 class Smart_contract(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -41,6 +41,7 @@ class Smart_contract(commands.Cog):
         if contract.startswith("```py") and contract.endswith("```"):
             contract=contract[5:-3]
             print(contract)
+        contract=  contract.replace("send(", "send(guild, author,")
         guild_collection =db[str(guild.id)]
         contracts = guild_collection.find({
             "type":"contract",
@@ -84,13 +85,23 @@ def execute_contracts(guild,array_of_contracts ,context, context_name):
         safe_dict["set_money"] = set_money
         safe_dict["guild"]=guild
         safe_dict['time'] = time
+        safe_dict["author"] = discord.utils.find(lambda person: person.id == contract["author"], guild.members)
         safe_dict[context_name]=context
         try:
             exec(contract["code"],{"__builtins__":None},safe_dict)
+            if "output" not in safe_dict:
+                return None
             if safe_dict["output"] is None:
                 return None
             reply = str(safe_dict["output"])
         except Exception as e:
+            print(e.__traceback__, "traceback")
+            etype = type(e)
+            trace = e.__traceback__
+            verbosity = 4
+            lines = traceback.format_exception(etype, e, trace, verbosity)
+            traceback_text = ''.join(lines)
+            print(traceback_text)
             reply = f'error:{e}'
         if(len(reply) > config["max_length"]):
             guild_collection.delete_one( { "_id" : contract["_id"]} )

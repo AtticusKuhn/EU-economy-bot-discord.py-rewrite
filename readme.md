@@ -57,13 +57,17 @@ People with the role "taxation" can access any wallet below them in the role hei
 What sets this bot apart from all other economy bots is smart contracts, allowing for
 more complex transactions. Let's look at an example:
 
-$smart-contract message 
-```
-output = send(message.guild,"<@464954455029317633>",message,author.mention,"1")
-```
+What makes this bot unique from other economy bots is the ability for users to create their own smart-contracts based on events on the server. 
 
-This smart contract will send $1 from my personal account to the person who sent the message.
-Each person can only have 3 smart contracts, and if a smart contract encounters an error, then it is automatically annuled.
+Currently the only event supported is messaging. So a user can send money to another user based on content found in a message. Here is an example:
+
+$add-smart-contract message 
+
+if message.content == "I want some money!":
+  send("@eulerthedestroyer", message.author.mention, "1")
+  output = "I just sent you 1 through a smart contract"
+
+This smart contract will send $1 from @eulerthedestroyer to the person who sent the message that matches the text "I want some money!". Each person can only have 3 smart contracts, and if a smart contract encounters an error, then it is automatically annulled.
 
 
 # Alternate currencies/items
